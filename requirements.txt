@@ -1,2 +1,3 @@
 requests==2.21.*
 tornado==5.1.1
+apache-libcloud==2.4.*
