@@ -1,10 +1,8 @@
 window.onload = function () {
-    ws.send('hello');
+    ws.send('refresh');
 };
 
-let ws;
-
-ws = new WebSocket('ws://localhost:8888/ws');
+let ws = new WebSocket('ws://localhost:8888/ws');
 
 ws.onmessage = function (event) {
     console.log(event);
