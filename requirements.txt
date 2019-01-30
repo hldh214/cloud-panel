@@ -1,2 +1,2 @@
 tornado==5.1.1
-apache-libcloud==2.4.*
+git+https://github.com/hldh214/libcloud.git@https-proxy-support#egg=apache-libcloud

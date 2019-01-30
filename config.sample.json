@@ -2,8 +2,7 @@
     "VULTR": {
         "enable": true,
         "init_params": {
-            "key": "secret key",
-            "http_proxy": "http://127.0.0.1:1080"
+            "key": "secret key"
         }
     },
     "GCE": {
@@ -12,7 +11,7 @@
             "user_id": "xxxxxx@developer.gserviceaccount.com",
             "key": "path_to_pem_file",
             "project": "project id",
-            "http_proxy": "http://127.0.0.1:1080"
+            "proxy_url": "https://127.0.0.1:1080"
         }
     }
 }
