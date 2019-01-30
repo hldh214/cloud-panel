@@ -38,6 +38,11 @@ class MainHandler(tornado.web.RequestHandler, ABC):
 
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
+    def open(self):
+        self.write_message({
+            'type': 'hello'
+        })
+
     def on_message(self, message):
         if message == 'refresh':
             # todo: 获取所有已经启动的 vps && 获取所有可以启动的 vps
@@ -45,12 +50,25 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
                 if not provider_config['enable']:
                     continue
 
-                driver = get_driver(getattr(Provider, provider_name))(**provider_config['init_params'])
+                self.refresh(provider_name, provider_config)
 
-                pprint(driver.list_nodes())
+    def refresh(self, provider_name, provider_config):
+        driver = get_driver(getattr(Provider, provider_name))(**provider_config['init_params'])
 
-            return self.write_message('refreshing')
-        return self.write_message(u"You said: " + message)
+        nodes = driver.list_nodes()
+
+        pprint(nodes)
+        self.write_message({
+            'type': 'refresh',
+            'nodes': [
+                {
+                    'uuid': node.uuid,
+                    'state': node.state,
+                    'public_ips': node.public_ips,
+                    'provider_name': provider_name,
+                } for node in nodes
+            ]
+        })
 
 
 def main():
