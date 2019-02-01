@@ -13,5 +13,13 @@
             "project": "project id",
             "proxy_url": "https://127.0.0.1:1080"
         }
+    },
+    "EC2": {
+        "enable": true,
+        "init_params": {
+            "key": "access key",
+            "secret": "secret key",
+            "region": "ap-northeast-1"
+        }
     }
 }
