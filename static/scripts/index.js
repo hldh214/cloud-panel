@@ -11,22 +11,39 @@ ws.onmessage = function (event) {
 
     switch (data.type) {
         case 'refresh':
-            let tr = $('<tr></tr>');
-            tr.addClass('provider-' + data.nodes[0].provider_name);
-            $('.provider-' + data.nodes[0].provider_name).remove();
+            $('.provider-' + data.provider_name).remove();
 
             data.nodes.forEach(function (each) {
-                $('<td></td>').text(each.uuid).appendTo(tr);
+                let tr = $('<tr></tr>');
+                tr.addClass('provider-' + data.provider_name);
+
+                $('<td></td>').text(each.node_id).appendTo(tr);
                 $('<td></td>').text(each.state).appendTo(tr);
                 $('<td></td>').text(each.public_ips).appendTo(tr);
-                $('<td></td>').text(each.provider_name).appendTo(tr);
-                $('<td></td>').append(
-                    $('<button type="button" class="btn btn-danger btn-sm">Delete</button>')
-                ).appendTo(tr);
+                $('<td></td>').text(data.provider_name).appendTo(tr);
+
+                let action_td = $('<td></td>');
+                if (each.state === 'running') {
+                    action_td.append(
+                        $('<button type="button" class="btn btn-danger btn-sm">Delete</button>')
+                            .data('node_id', each.node_id)
+                            .click(function () {
+                                $(this).text('Deleting...');
+
+                                ws.send(JSON.stringify({
+                                    'type': 'delete',
+                                    'data': {
+                                        'node_id': each.node_id,
+                                        'provider_name': data.provider_name
+                                    }
+                                }));
+                            })
+                    );
+                }
+                action_td.appendTo(tr);
+
+                $('#tbody').append(tr);
             });
-
-
-            $('#tbody').append(tr);
             break;
     }
 };

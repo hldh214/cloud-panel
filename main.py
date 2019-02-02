@@ -13,7 +13,6 @@ from sys import argv
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from tornado.options import define, options
-from pprint import pprint
 
 define("port", default=8888, help="run on the given port", type=int)
 DEFAULT_CONFIG_FILE = 'config.json'
@@ -47,29 +46,35 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
         message = json.loads(raw_message)
 
         if message['type'] == 'refresh':
-            # todo: 获取所有已经启动的 vps && 获取所有可以启动的 vps
             for provider_name, provider_config in config.items():
                 if not provider_config['enable']:
                     continue
 
                 self.refresh(provider_name, provider_config)
+        elif message['type'] == 'delete':
+            message = message['data']
+
+            if self.delete(message['node_id'], message['provider_name']):
+                self.refresh(message['provider_name'], config[message['provider_name']])
+
+    def delete(self, node_id, provider_name):
+        return get_driver(getattr(Provider, provider_name)) \
+            (**config[provider_name]['init_params']) \
+            .destroy_node(type('obj', (object,), {'id': node_id}))
 
     def refresh(self, provider_name, provider_config):
         driver = get_driver(getattr(Provider, provider_name))(**provider_config['init_params'])
 
         nodes = driver.list_nodes()
 
-        if not nodes:
-            return False
-
         return self.write_message({
             'type': 'refresh',
+            'provider_name': provider_name,
             'nodes': [
                 {
-                    'uuid': node.uuid,
+                    'node_id': node.id,
                     'state': node.state,
-                    'public_ips': node.public_ips,
-                    'provider_name': provider_name,
+                    'public_ips': node.public_ips
                 } for node in nodes
             ]
         })
