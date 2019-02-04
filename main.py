@@ -41,6 +41,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
         self.write_message({
             'type': 'hello'
         })
+        self.create()
 
     def on_message(self, raw_message):
         message = json.loads(raw_message)
@@ -56,11 +57,25 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
 
             if self.delete(message['node_id'], message['provider_name']):
                 self.refresh(message['provider_name'], config[message['provider_name']])
+        elif message['type'] == 'create':
+            message = message['data']
+
+            if self.create():
+                self.refresh(message['provider_name'], config[message['provider_name']])
+
+    def create(self):
+        pass
 
     def delete(self, node_id, provider_name):
-        return get_driver(getattr(Provider, provider_name)) \
-            (**config[provider_name]['init_params']) \
-            .destroy_node(type('obj', (object,), {'id': node_id}))
+        driver = get_driver(getattr(Provider, provider_name))(**config[provider_name]['init_params'])
+
+        all_nodes = driver.list_nodes()
+        nodes = [each for each in all_nodes if each.id == node_id]
+
+        if not nodes:
+            return False
+
+        return driver.destroy_node(nodes[0])
 
     def refresh(self, provider_name, provider_config):
         driver = get_driver(getattr(Provider, provider_name))(**provider_config['init_params'])
