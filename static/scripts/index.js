@@ -33,7 +33,18 @@ ws.onmessage = function (event) {
                 let tr = $('<tr></tr>');
                 tr.addClass('provider-' + data.provider_name);
 
-                $('<td></td>').text(each.ss_config).appendTo(tr);
+                if (each.ss_config) {
+                    $('<td><div class="input-group">\n' +
+                    '  <input type="text" class="form-control" value="' + each.ss_config + '" readonly>\n' +
+                    '  <div class="input-group-append">\n' +
+                    '    <button class="btn btn-outline-secondary" type="button" data-clipboard-text="' +
+                    each.ss_config + '">Copy</button>\n' +
+                    '  </div>\n' +
+                    '</div></td>').appendTo(tr);
+                } else {
+                    $('<td></td>').appendTo(tr);
+                }
+
                 $('<td></td>').text(each.state).appendTo(tr);
                 $('<td></td>').text(each.public_ips).appendTo(tr);
                 $('<td></td>').text(data.provider_name).appendTo(tr);
@@ -59,6 +70,8 @@ ws.onmessage = function (event) {
                 action_td.appendTo(tr);
 
                 $('#tbody').append(tr);
+
+                new ClipboardJS('.btn');
             });
             break;
     }
