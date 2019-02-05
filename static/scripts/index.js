@@ -33,7 +33,7 @@ ws.onmessage = function (event) {
                 let tr = $('<tr></tr>');
                 tr.addClass('provider-' + data.provider_name);
 
-                $('<td></td>').text(each.node_id).appendTo(tr);
+                $('<td></td>').text(each.ss_config).appendTo(tr);
                 $('<td></td>').text(each.state).appendTo(tr);
                 $('<td></td>').text(each.public_ips).appendTo(tr);
                 $('<td></td>').text(data.provider_name).appendTo(tr);

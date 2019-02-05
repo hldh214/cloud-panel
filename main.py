@@ -8,6 +8,7 @@ import tornado.websocket
 import os.path
 
 from abc import ABC
+from base64 import b64encode
 from sys import argv
 
 from libcloud.compute.types import Provider
@@ -117,7 +118,14 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
             'provider_name': provider_name,
             'nodes': [
                 {
-                    'node_id': node.id,
+                    'ss_config': 'ss://{0}#{1}'.format(
+                        b64encode('{0}:{1}@{2}:{3}'.format(
+                            provider_config['SS_CONFIG']['method'],
+                            provider_config['SS_CONFIG']['password'],
+                            node.public_ips[0],
+                            provider_config['SS_CONFIG']['port']
+                        ).encode()).decode(), provider_config['SS_CONFIG']['tag']
+                    ) if 'SS_CONFIG' in provider_config and node.public_ips else '',
                     'state': node.state,
                     'public_ips': node.public_ips
                 } for node in nodes

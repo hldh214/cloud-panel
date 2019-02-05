@@ -28,6 +28,12 @@
             "size_ids": [
                 "t2.micro"
             ]
+        },
+        "SS_CONFIG": {
+            "method": "chacha20-ietf-poly1305",
+            "password": "hldh214",
+            "port": 21400,
+            "tag": "libcloud"
         }
     },
     "DIGITAL_OCEAN": {
