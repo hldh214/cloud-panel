@@ -1,4 +1,20 @@
-let ws = new WebSocket('ws://' + window.location.hostname + ':' + window.location.port + '/ws');
+let ws = new ReconnectingWebSocket('ws://' + window.location.hostname + ':' + window.location.port + '/ws');
+
+function create() {
+    let submit_data_raw = $('#create').serializeArray();
+
+    let submit_data = {};
+    for (let x in submit_data_raw) {
+        submit_data[submit_data_raw[x].name] = submit_data_raw[x].value;
+    }
+
+    ws.send(JSON.stringify({
+        'type': 'create',
+        'data': submit_data
+    }));
+
+    $('#create-modal').modal('hide');
+}
 
 ws.onopen = function () {
     ws.send(JSON.stringify({

@@ -21,6 +21,7 @@ with open(argv[1] if len(argv) > 1 else DEFAULT_CONFIG_FILE) as fp:
     config = json.load(fp)
 
 
+# todo: add sys monitor like cloud-torrent
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [(r"/", MainHandler), (r"/ws", WebSocketHandler)]
@@ -33,7 +34,17 @@ class Application(tornado.web.Application):
 
 class MainHandler(tornado.web.RequestHandler, ABC):
     def get(self):
-        self.render("index.html")
+        available_providers = {}
+        for provider_name, provider_config in config.items():
+            if not provider_config['enable']:
+                continue
+
+            if 'create_params' not in provider_config:
+                continue
+
+            available_providers[provider_name] = provider_config['create_params']
+
+        self.render("index.html", available_providers=available_providers)
 
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
@@ -41,7 +52,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
         self.write_message({
             'type': 'hello'
         })
-        self.create()
 
     def on_message(self, raw_message):
         message = json.loads(raw_message)
@@ -55,18 +65,38 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
         elif message['type'] == 'delete':
             message = message['data']
 
-            if self.delete(message['node_id'], message['provider_name']):
+            if self.delete(message['provider_name'], message['node_id']):
                 self.refresh(message['provider_name'], config[message['provider_name']])
         elif message['type'] == 'create':
             message = message['data']
 
-            if self.create():
+            if self.create(message['provider_name'], message):
                 self.refresh(message['provider_name'], config[message['provider_name']])
 
-    def create(self):
-        pass
+    def create(self, provider_name, message):
+        driver = get_driver(getattr(Provider, provider_name))(**config[provider_name]['init_params'])
 
-    def delete(self, node_id, provider_name):
+        all_sizes = driver.list_sizes()
+        sizes = [each for each in all_sizes if each.id == message['size_id']]
+
+        if provider_name == 'EC2':
+            # handle AWS `list_images()` low performance case
+            # @see: https://bit.ly/2t263sW
+            all_images = driver.list_images(ex_image_ids=[message['image_id']])
+        else:
+            all_images = driver.list_images()
+        images = [each for each in all_images if each.id == message['image_id']]
+
+        if not sizes or not images:
+            return False
+
+        return driver.create_node(
+            name='libcloud',
+            image=images[0],
+            size=sizes[0]
+        )
+
+    def delete(self, provider_name, node_id):
         driver = get_driver(getattr(Provider, provider_name))(**config[provider_name]['init_params'])
 
         all_nodes = driver.list_nodes()

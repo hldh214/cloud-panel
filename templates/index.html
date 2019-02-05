@@ -46,11 +46,51 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    ...
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Create!</button>
+                    <form id="create">
+                        <div class="form-group row">
+                            <label for="provider-select" class="col-sm-2 col-form-label">Provider</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" id="provider-select" name="provider_name">
+                                    {% for provider_name, _ in available_providers.items() %}
+                                    <option value="{{ provider_name }}">{{ provider_name }}</option>
+                                    {% end %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="image-select" class="col-sm-2 col-form-label">Image</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" id="image-select" name="image_id">
+                                    {% for provider_name, provider_config in available_providers.items() %}
+                                    {% for image_id in provider_config['image_ids'] %}
+                                    <option value="{{ image_id }}" data-provider-name="{{ provider_name }}">
+                                        {{ provider_name }} - {{ image_id }}
+                                    </option>
+                                    {% end %}
+                                    {% end %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="size-select" class="col-sm-2 col-form-label">Size</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" id="size-select" name="size_id">
+                                    {% for provider_name, provider_config in available_providers.items() %}
+                                    {% for size_id in provider_config['size_ids'] %}
+                                    <option value="{{ size_id }}" data-provider-name="{{ provider_name }}">
+                                        {{ provider_name }} - {{ size_id }}
+                                    </option>
+                                    {% end %}
+                                    {% end %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-10">
+                                <button class="btn btn-primary" onclick="create();return false;">Create</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -58,6 +98,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reconnectingwebsocket@1/reconnecting-websocket.min.js"></script>
 <script src="{{ static_url("scripts/index.js") }}"></script>
 </body>
 </html>
