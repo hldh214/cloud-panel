@@ -86,6 +86,20 @@
                             </div>
                         </div>
                         <div class="form-group row">
+                            <label for="keyname-select" class="col-sm-2 col-form-label">Keyname</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" id="keyname-select" name="ex_keyname">
+                                    {% for provider_name, provider_config in available_providers.items() %}
+                                    {% for ex_keyname in provider_config['ex_keynames'] %}
+                                    <option value="{{ ex_keyname }}" data-provider-name="{{ provider_name }}">
+                                        {{ provider_name }} - {{ ex_keyname }}
+                                    </option>
+                                    {% end %}
+                                    {% end %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
                             <div class="col-sm-10">
                                 <button class="btn btn-primary" onclick="create();return false;">Create</button>
                             </div>
