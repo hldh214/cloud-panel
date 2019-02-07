@@ -80,10 +80,15 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
         all_sizes = driver.list_sizes()
         sizes = [each for each in all_sizes if each.id == message['size_id']]
 
+        kwargs = {}
+
         if provider_name == 'EC2':
             # handle AWS `list_images()` low performance case
             # @see: https://bit.ly/2t263sW
             all_images = driver.list_images(ex_image_ids=[message['image_id']])
+
+            # ex_keyname
+            kwargs['ex_keyname'] = message['ex_keyname']
         else:
             all_images = driver.list_images()
         images = [each for each in all_images if each.id == message['image_id']]
@@ -94,7 +99,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
         return driver.create_node(
             name='libcloud',
             image=images[0],
-            size=sizes[0]
+            size=sizes[0],
+            **kwargs
         )
 
     def delete(self, provider_name, node_id):
@@ -118,6 +124,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
             'provider_name': provider_name,
             'nodes': [
                 {
+                    'node_id': node.id,
                     'ss_config': 'ss://{0}#{1}'.format(
                         b64encode('{0}:{1}@{2}:{3}'.format(
                             provider_config['SS_CONFIG']['method'],
@@ -125,7 +132,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
                             node.public_ips[0],
                             provider_config['SS_CONFIG']['port']
                         ).encode()).decode(), provider_config['SS_CONFIG']['tag']
-                    ) if 'SS_CONFIG' in provider_config and node.public_ips else '',
+                    ) if 'SS_CONFIG' in provider_config and node.public_ips and node.state == 'running' else '',
                     'state': node.state,
                     'public_ips': node.public_ips
                 } for node in nodes
