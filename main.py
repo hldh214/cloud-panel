@@ -9,17 +9,23 @@ import os.path
 
 from abc import ABC
 from base64 import b64encode
-from sys import argv
 
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from tornado.options import define, options
+from tornado_http_auth import DigestAuthMixin, auth_required
 
 define("port", default=8888, help="run on the given port", type=int)
-DEFAULT_CONFIG_FILE = 'config.json'
+define("config", default='config.json', help="config file path", type=str)
+define("username", default='admin', help="http basic auth username", type=str)
+define("password", default='admin888', help="http basic auth password", type=str)
 
-with open(argv[1] if len(argv) > 1 else DEFAULT_CONFIG_FILE) as fp:
+tornado.options.parse_command_line()
+
+with open(options.config) as fp:
     config = json.load(fp)
+
+credentials = {options.username: options.password}
 
 
 # todo: add sys monitor like cloud-torrent
@@ -33,7 +39,8 @@ class Application(tornado.web.Application):
         super(Application, self).__init__(handlers, **settings)
 
 
-class MainHandler(tornado.web.RequestHandler, ABC):
+class MainHandler(DigestAuthMixin, tornado.web.RequestHandler, ABC):
+    @auth_required(realm='cloud-panel', auth_func=credentials.get)
     def get(self):
         available_providers = {}
         for provider_name, provider_config in config.items():
@@ -49,6 +56,9 @@ class MainHandler(tornado.web.RequestHandler, ABC):
 
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
+    def check_origin(self, origin):
+        return True
+
     def open(self):
         self.write_message({
             'type': 'hello'
@@ -141,7 +151,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
 
 
 def main():
-    tornado.options.parse_command_line()
     app = Application()
     app.listen(options.port)
     tornado.ioloop.IOLoop.current().start()
