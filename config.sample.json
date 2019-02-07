@@ -27,6 +27,9 @@
             ],
             "size_ids": [
                 "t2.micro"
+            ],
+            "ex_keynames": [
+                "xxxxxxx"
             ]
         },
         "SS_CONFIG": {
