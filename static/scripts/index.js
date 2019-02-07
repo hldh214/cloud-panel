@@ -34,13 +34,13 @@ ws.onmessage = function (event) {
                 tr.addClass('provider-' + data.provider_name);
 
                 if (each.ss_config) {
-                    $('<td><div class="input-group">\n' +
-                    '  <input type="text" class="form-control" value="' + each.ss_config + '" readonly>\n' +
-                    '  <div class="input-group-append">\n' +
-                    '    <button class="btn btn-outline-secondary" type="button" data-clipboard-text="' +
-                    each.ss_config + '">Copy</button>\n' +
-                    '  </div>\n' +
-                    '</div></td>').appendTo(tr);
+                    $('<td><div class="input-group input-group-sm">\n' +
+                        '  <input type="text" class="form-control" value="' + each.ss_config + '" readonly>\n' +
+                        '  <div class="input-group-append">\n' +
+                        '    <button class="btn btn-outline-secondary" type="button" data-clipboard-text="' +
+                        each.ss_config + '">Copy</button>\n' +
+                        '  </div>\n' +
+                        '</div></td>').appendTo(tr);
                 } else {
                     $('<td></td>').appendTo(tr);
                 }
@@ -71,7 +71,13 @@ ws.onmessage = function (event) {
 
                 $('#tbody').append(tr);
 
-                new ClipboardJS('.btn');
+                let clipboard = new ClipboardJS('.btn');
+
+                clipboard.on('success', function (e) {
+                    $(e.trigger).text('Copied!');
+
+                    e.clearSelection();
+                });
             });
             break;
     }
