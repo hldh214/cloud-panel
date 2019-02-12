@@ -30,7 +30,10 @@
             ],
             "ex_keynames": [
                 "xxxxxxx"
-            ]
+            ],
+            "kwargs": {
+                "ex_userdata": "remove this line if you dont need userdata"
+            }
         },
         "SS_CONFIG": {
             "method": "chacha20-ietf-poly1305",

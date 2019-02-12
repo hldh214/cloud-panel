@@ -106,6 +106,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
         if not sizes or not images:
             return False
 
+        # add driver-spec configs
+        kwargs.update(config[provider_name]['create_params']['kwargs'])
+
         return driver.create_node(
             name='libcloud',
             image=images[0],
