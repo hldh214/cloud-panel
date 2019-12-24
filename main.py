@@ -1,3 +1,11 @@
+import asyncio
+import sys
+
+# https://github.com/tornadoweb/tornado/issues/2608
+# https://stackoverflow.com/a/58430041
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 import json
 
 import tornado.escape

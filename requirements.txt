@@ -1,3 +1,4 @@
-tornado==5.1.1
-git+https://github.com/hldh214/libcloud.git@https-proxy-support#egg=apache-libcloud
+tornado==6.0.3
+apache-libcloud==2.7.0
 tornado_http_auth==1.1.1
+cryptography==2.8
