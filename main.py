@@ -154,7 +154,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
                             provider_config['SS_CONFIG']['port']
                         ).encode()).decode(), provider_config['SS_CONFIG']['tag']
                     ) if 'SS_CONFIG' in provider_config and node.public_ips and node.state == 'running' else '',
-                    'state': node.state,
+                    'state': str(node.state),
                     'public_ips': node.public_ips
                 } for node in nodes
             ]
