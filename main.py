@@ -6,6 +6,7 @@ import sys
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
+import datetime
 import json
 
 import tornado.escape
@@ -16,7 +17,6 @@ import tornado.websocket
 import os.path
 
 from abc import ABC
-from base64 import b64encode
 
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
@@ -92,39 +92,19 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
             if self.create(message['provider_name'], message):
                 self.refresh(message['provider_name'], config[message['provider_name']])
 
-    def create(self, provider_name, message):
+    @staticmethod
+    def create(provider_name, message):
         driver = get_driver(getattr(Provider, provider_name))(**config[provider_name]['init_params'])
 
-        all_sizes = driver.list_sizes()
-        sizes = [each for each in all_sizes if each.id == message['size_id']]
-
-        kwargs = {}
-
-        if provider_name == 'EC2':
-            # handle AWS `list_images()` low performance case
-            # @see: https://bit.ly/2t263sW
-            all_images = driver.list_images(ex_image_ids=[message['image_id']])
-
-            # ex_keyname
-            kwargs['ex_keyname'] = message['ex_keyname']
-        else:
-            all_images = driver.list_images()
-        images = [each for each in all_images if each.id == message['image_id']]
-
-        if not sizes or not images:
-            return False
-
-        # add driver-spec configs
-        kwargs.update(config[provider_name]['create_params']['kwargs'])
-
         return driver.create_node(
-            name='libcloud',
-            image=images[0],
-            size=sizes[0],
-            **kwargs
+            name='libcloud-' + datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
+            image=message['image_id'],
+            size=message['size_id'],
+            **config[provider_name]['create_params']['kwargs']
         )
 
-    def delete(self, provider_name, node_id):
+    @staticmethod
+    def delete(provider_name, node_id):
         driver = get_driver(getattr(Provider, provider_name))(**config[provider_name]['init_params'])
 
         all_nodes = driver.list_nodes()
@@ -146,14 +126,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler, ABC):
             'nodes': [
                 {
                     'node_id': node.id,
-                    'ss_config': 'ss://{0}#{1}'.format(
-                        b64encode('{0}:{1}@{2}:{3}'.format(
-                            provider_config['SS_CONFIG']['method'],
-                            provider_config['SS_CONFIG']['password'],
-                            node.public_ips[0],
-                            provider_config['SS_CONFIG']['port']
-                        ).encode()).decode(), provider_config['SS_CONFIG']['tag']
-                    ) if 'SS_CONFIG' in provider_config and node.public_ips and node.state == 'running' else '',
+                    'ss_config': '',
                     'state': str(node.state),
                     'public_ips': node.public_ips
                 } for node in nodes

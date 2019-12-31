@@ -9,9 +9,20 @@
         "enable": false,
         "init_params": {
             "user_id": "xxxxxx@developer.gserviceaccount.com",
-            "key": "path_to_pem_file",
+            "key": "path_to_json_file",
             "project": "project id",
-            "proxy_url": "https://127.0.0.1:1080"
+            "proxy_url": "https://127.0.0.1:7890"
+        },
+        "create_params": {
+            "image_ids": [
+                "ubuntu-1804-bionic-v20191211"
+            ],
+            "size_ids": [
+                "f1-micro"
+            ],
+            "kwargs": {
+                "location": "asia-east2-b"
+            }
         }
     },
     "EC2": {

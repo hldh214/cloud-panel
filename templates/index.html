@@ -90,10 +90,12 @@
                             <div class="col-sm-10">
                                 <select class="form-control" id="keyname-select" name="ex_keyname">
                                     {% for provider_name, provider_config in available_providers.items() %}
-                                    {% for ex_keyname in provider_config['ex_keynames'] %}
-                                    <option value="{{ ex_keyname }}" data-provider-name="{{ provider_name }}">
-                                        {{ provider_name }} - {{ ex_keyname }}
-                                    </option>
+                                    {% if 'ex_keynames' in provider_config %}
+                                        {% for ex_keyname in provider_config['ex_keynames'] %}
+                                        <option value="{{ ex_keyname }}" data-provider-name="{{ provider_name }}">
+                                            {{ provider_name }} - {{ ex_keyname }}
+                                        </option>
+                                        {% end %}
                                     {% end %}
                                     {% end %}
                                 </select>
