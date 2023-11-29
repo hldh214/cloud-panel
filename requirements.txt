@@ -1,4 +1,4 @@
 tornado==6.3.3
 apache-libcloud==2.7.0
 tornado_http_auth==1.1.1
-cryptography==41.0.4
+cryptography==41.0.6
